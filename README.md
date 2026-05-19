@@ -15,7 +15,6 @@
 - [Giới thiệu](#-giới-thiệu)
 - [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
 - [Tính năng nổi bật](#-tính-năng-nổi-bật)
-- [Semantic Cache](#-semantic-cache)
 - [Công nghệ sử dụng](#️-công-nghệ-sử-dụng)
 - [Đánh giá mô hình (Evaluation)](#-đánh-giá-mô-hình-evaluation)
 - [Cấu trúc dự án](#-cấu-trúc-dự-án)
@@ -38,7 +37,7 @@ Dự án áp dụng kiến trúc **Microservices** tiêu chuẩn ngành: phân t
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    FRONTEND (Streamlit UI)                       │
-│              src/main.py  ·  Port 8501                          │
+│              src/app.py  ·  Port 8501                           │
 └──────────────────────────┬──────────────────────────────────────┘
                            │  REST API (HTTP)
                            │  ├── POST /chat         (Streaming)
@@ -138,6 +137,7 @@ BuildRAG/
 │   │   ├── agent_state.py          # Quản lý vòng đời Agent (singleton cache)
 │   │   ├── semantic_cache.py       # 🧠 Lưu trữ & so khớp ngữ nghĩa câu trả lời
 │   │   └── routers/
+│   │       ├── __init__.py
 │   │       ├── chat.py             # POST /chat (Streaming Response + Cache logic)
 │   │       └── ingest.py           # POST /ingest/url | /ingest/local
 │   │
@@ -146,10 +146,19 @@ BuildRAG/
 │   │   ├── ingest_url.py           # Pipeline: URL → Chunks → ChromaDB
 │   │   └── ingest_local.py         # Pipeline: File → Chunks → ChromaDB
 │   │
-│   └── main.py                     # 🖥️ Frontend Streamlit UI
+│   ├── eval/                       # 📊 Đánh giá hệ thống (RAGAS)
+│   │   ├── eval.py                 # Pipeline đánh giá với RAGAS metrics
+│   │   ├── test_agent.py           # Bộ câu hỏi kiểm thử nâng cao
+│   │   ├── test_basic.py           # Bộ câu hỏi kiểm thử cơ bản
+│   │   └── result/
+│   │       └── final_report.csv    # Kết quả đánh giá (tự tạo khi chạy)
+│   │
+│   └── app.py                      # 🖥️ Frontend Streamlit UI
 │
 ├── chroma_db/                      # Vector database (tự tạo khi chạy)
+├── chroma_cache/                   # Cache semantic vector (tự tạo khi chạy)
 ├── data/                           # Thư mục chứa file tải lên (tự tạo)
+├── api.log                         # Log file của Backend API
 ├── .env                            # Biến môi trường (API Keys)
 ├── requirements.txt
 └── README.md
@@ -218,7 +227,7 @@ Truy cập `http://127.0.0.1:8000/docs` để xem Swagger UI đầy đủ.
 ### Terminal 2 — Khởi động Frontend UI
 
 ```bash
-streamlit run src/main.py
+streamlit run src/app.py
 ```
 
 Frontend sẽ chạy tại `http://localhost:8501`.
